@@ -437,9 +437,33 @@ function G.FUNCS.evaluate_play()
     end
 end
 
-
 local oldupd = love.update
 function love.update(dt, ...)
+  if G.jokers and G.jokers.cards then
+    for i, v in pairs(G.jokers.cards) do
+      if not v.ACCEPTED_CONTEXTS then
+        v.ACCEPTED_CONTEXTS = {}
+        local center = v.config.center
+        if center then
+          if center.calculate and type(center.calculate) == "function" then
+            local dump = string.dump(center.calculate)
+            for l in string.gmatch(dump, "[a-z_]+") do
+              if l ~= "poker_hands" and l ~= "other_card" and l ~= "scoring_name" and l ~= "callback" and l ~= "no_retrigger_anim" and l ~= "scoring_hand" and l ~= "full_hand" and l ~= "cardarea" then
+                v.ACCEPTED_CONTEXTS[l] = true
+              end
+            end
+          else
+            v.ACCEPTED_CONTEXTS = true
+          end
+        end
+      end
+    end
+  end
+
+
+
+  if not G.CONTEXT_CALC_COUNT then G.CONTEXT_CALC_COUNT = {} end
+  if not G.CONTEXT_TIME_COUNT then G.CONTEXT_TIME_COUNT = {} end
     oldupd(dt, ...)
     if G.SCORING_COROUTINE then
       if collectgarbage("count") > 1024*1024 then
@@ -505,6 +529,29 @@ function love.update(dt, ...)
     end
 end
 
+local function sortHelper(a,b)
+  if a[1] < b[1] then
+    return true
+  end
+  return false
+end
+
+local function printResultsOfSearch()
+  local atable = {}
+  for i, v in pairs(G.CONTEXT_TIME_COUNT) do
+    table.insert(atable, {v, i})
+  end
+  local btable = {}
+  for i, v in pairs(G.CONTEXT_CALC_COUNT) do
+    table.insert(btable, {v, i})
+  end
+  table.sort(atable, sortHelper)
+  table.sort(btable, sortHelper)
+  for i, v in pairs(atable) do
+    print(v[2].."         "..tostring(v[1]))
+  end
+end
+
 
 
 TIME_BETWEEN_SCORING_FRAMES = 0.03 -- 30 fps during scoring
@@ -517,6 +564,27 @@ Talisman.calculating_card = false
 Talisman.dollar_update = false
 local ccj = Card.calculate_joker
 function Card:calculate_joker(context)
+  local flag = false
+  if type(self.ACCEPTED_CONTEXTS) == "table" then
+    for i, v in pairs(context) do
+      if self.ACCEPTED_CONTEXTS[i] then
+        flag = true
+      end
+    end
+  else
+    flag = true
+  end
+  if not flag then
+    return
+  end
+  local cur = love.timer.getTime()
+  for i, v in pairs(context) do
+    if G.CONTEXT_CALC_COUNT[i] then
+      G.CONTEXT_CALC_COUNT[i] = G.CONTEXT_CALC_COUNT[i] + 1
+    else
+      G.CONTEXT_CALC_COUNT[i] = 1
+    end
+  end
   --scoring coroutine
   G.CURRENT_SCORING_CARD = self
   G.CARD_CALC_COUNTS = G.CARD_CALC_COUNTS or {}
@@ -538,6 +606,13 @@ function Card:calculate_joker(context)
     G.CARD_CALC_COUNTS[ret.card][2] = G.CARD_CALC_COUNTS[ret.card][2] + ret.repetitions
   end
   Talisman.calculating_joker = false
+  for i, v in pairs(context) do
+    if G.CONTEXT_TIME_COUNT[i] then
+      G.CONTEXT_TIME_COUNT[i] = G.CONTEXT_TIME_COUNT[i] + (love.timer.getTime() - cur)
+    else
+      G.CONTEXT_TIME_COUNT[i] = (love.timer.getTime() - cur)
+    end
+  end
   return ret
 end
 local cuc = Card.use_consumable
@@ -552,6 +627,7 @@ G.FUNCS.evaluate_play = function(e)
   Talisman.calculating_score = true
   local ret = gfep(e)
   Talisman.calculating_score = false
+  printResultsOfSearch()
   return ret
 end
 --[[local ec = eval_card
