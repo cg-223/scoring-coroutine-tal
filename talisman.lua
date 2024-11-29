@@ -529,29 +529,6 @@ function love.update(dt, ...)
     end
 end
 
-local function sortHelper(a,b)
-  if a[1] < b[1] then
-    return true
-  end
-  return false
-end
-
-local function printResultsOfSearch()
-  local atable = {}
-  for i, v in pairs(G.CONTEXT_TIME_COUNT) do
-    table.insert(atable, {v, i})
-  end
-  local btable = {}
-  for i, v in pairs(G.CONTEXT_CALC_COUNT) do
-    table.insert(btable, {v, i})
-  end
-  table.sort(atable, sortHelper)
-  table.sort(btable, sortHelper)
-  for i, v in pairs(atable) do
-    print(v[2].."         "..tostring(v[1]))
-  end
-end
-
 
 
 TIME_BETWEEN_SCORING_FRAMES = 0.03 -- 30 fps during scoring
@@ -577,7 +554,6 @@ function Card:calculate_joker(context)
   if not flag then
     return
   end
-  local cur = love.timer.getTime()
   for i, v in pairs(context) do
     if G.CONTEXT_CALC_COUNT[i] then
       G.CONTEXT_CALC_COUNT[i] = G.CONTEXT_CALC_COUNT[i] + 1
@@ -587,12 +563,6 @@ function Card:calculate_joker(context)
   end
   --scoring coroutine
   G.CURRENT_SCORING_CARD = self
-  G.CARD_CALC_COUNTS = G.CARD_CALC_COUNTS or {}
-  if G.CARD_CALC_COUNTS[self] then
-    G.CARD_CALC_COUNTS[self][1] = G.CARD_CALC_COUNTS[self][1] + 1
-  else
-    G.CARD_CALC_COUNTS[self] = {1, 1}
-  end
 
 
   if G.LAST_SCORING_YIELD and ((love.timer.getTime() - G.LAST_SCORING_YIELD) > TIME_BETWEEN_SCORING_FRAMES) and coroutine.running() then
@@ -606,13 +576,6 @@ function Card:calculate_joker(context)
     G.CARD_CALC_COUNTS[ret.card][2] = G.CARD_CALC_COUNTS[ret.card][2] + ret.repetitions
   end
   Talisman.calculating_joker = false
-  for i, v in pairs(context) do
-    if G.CONTEXT_TIME_COUNT[i] then
-      G.CONTEXT_TIME_COUNT[i] = G.CONTEXT_TIME_COUNT[i] + (love.timer.getTime() - cur)
-    else
-      G.CONTEXT_TIME_COUNT[i] = (love.timer.getTime() - cur)
-    end
-  end
   return ret
 end
 local cuc = Card.use_consumable
@@ -627,7 +590,6 @@ G.FUNCS.evaluate_play = function(e)
   Talisman.calculating_score = true
   local ret = gfep(e)
   Talisman.calculating_score = false
-  printResultsOfSearch()
   return ret
 end
 --[[local ec = eval_card
