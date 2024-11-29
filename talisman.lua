@@ -554,16 +554,14 @@ function Card:calculate_joker(context)
   if not flag then
     return
   end
-  for i, v in pairs(context) do
-    if G.CONTEXT_CALC_COUNT[i] then
-      G.CONTEXT_CALC_COUNT[i] = G.CONTEXT_CALC_COUNT[i] + 1
-    else
-      G.CONTEXT_CALC_COUNT[i] = 1
-    end
-  end
   --scoring coroutine
   G.CURRENT_SCORING_CARD = self
-
+  G.CARD_CALC_COUNTS = G.CARD_CALC_COUNTS or {}
+  if G.CARD_CALC_COUNTS[self] then
+    G.CARD_CALC_COUNTS[self][1] = G.CARD_CALC_COUNTS[self][1] + 1
+  else
+    G.CARD_CALC_COUNTS[self] = {1, 1}
+  end
 
   if G.LAST_SCORING_YIELD and ((love.timer.getTime() - G.LAST_SCORING_YIELD) > TIME_BETWEEN_SCORING_FRAMES) and coroutine.running() then
         coroutine.yield()
