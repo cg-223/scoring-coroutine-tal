@@ -30,7 +30,11 @@ void checkNull(void* thing) {
 
 void* xmalloc(size_t size) {
     void* ourptr = malloc(size);
-    checkNull(ourptr);
+    //checkNull(ourptr);
+    if (ourptr == NULL) {
+        perror("oom");
+        exit(EXIT_FAILURE);
+    };
     return ourptr;
 };
 
