@@ -441,33 +441,9 @@ function G.FUNCS.evaluate_play()
     end
 end
 
+
 local oldupd = love.update
 function love.update(dt, ...)
-  if G.jokers and G.jokers.cards then
-    for i, v in pairs(G.jokers.cards) do
-      if not v.ACCEPTED_CONTEXTS then
-        v.ACCEPTED_CONTEXTS = {}
-        local center = v.config.center
-        if center then
-          if center.calculate and type(center.calculate) == "function" then
-            local dump = string.dump(center.calculate)
-            for l in string.gmatch(dump, "[a-z_]+") do
-              if l ~= "poker_hands" and l ~= "other_card" and l ~= "scoring_name" and l ~= "callback" and l ~= "no_retrigger_anim" and l ~= "scoring_hand" and l ~= "full_hand" and l ~= "cardarea" then
-                v.ACCEPTED_CONTEXTS[l] = true
-              end
-            end
-          else
-            v.ACCEPTED_CONTEXTS = true
-          end
-        end
-      end
-    end
-  end
-
-
-
-  if not G.CONTEXT_CALC_COUNT then G.CONTEXT_CALC_COUNT = {} end
-  if not G.CONTEXT_TIME_COUNT then G.CONTEXT_TIME_COUNT = {} end
     oldupd(dt, ...)
     if G.SCORING_COROUTINE then
       if collectgarbage("count") > 1024*1024 then
@@ -545,19 +521,6 @@ Talisman.calculating_card = false
 Talisman.dollar_update = false
 local ccj = Card.calculate_joker
 function Card:calculate_joker(context)
-  local flag = false
-  if type(self.ACCEPTED_CONTEXTS) == "table" then
-    for i, v in pairs(context) do
-      if self.ACCEPTED_CONTEXTS[i] then
-        flag = true
-      end
-    end
-  else
-    flag = true
-  end
-  if not flag then
-    return
-  end
   --scoring coroutine
   G.CURRENT_SCORING_CARD = self
   G.CARD_CALC_COUNTS = G.CARD_CALC_COUNTS or {}
@@ -566,6 +529,7 @@ function Card:calculate_joker(context)
   else
     G.CARD_CALC_COUNTS[self] = {1, 1}
   end
+
 
   if G.LAST_SCORING_YIELD and ((love.timer.getTime() - G.LAST_SCORING_YIELD) > TIME_BETWEEN_SCORING_FRAMES) and coroutine.running() then
         coroutine.yield()
