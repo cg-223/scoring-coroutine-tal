@@ -7,7 +7,8 @@
 
 
 int maxArrow = 1000;
-int capPageSize = 4096; //power of 2
+int capPageSize = 32; //power of 2
+int defaultPages = 1; 
 
 struct dblArray {
     double *first;
@@ -20,24 +21,41 @@ struct Big {
     int sign;
 };
 
-void initDblArray(struct dblArray *array, size_t pages) {
-    if (pages == NULL) {
-        pages = 1;
-    };
-    array->first = (double *)malloc(pages * capPageSize * sizeof(double)); //capPageSize * pages doubles
-    if (array->first == NULL) {
+void checkNull(void* thing) {
+    if (thing == NULL) {
         perror("oom");
         exit(EXIT_FAILURE);
     };
+};
+
+void* xmalloc(size_t size) {
+    void* ourptr = malloc(size);
+    checkNull(ourptr);
+    return ourptr;
+};
+
+void initDblArray(struct dblArray *array, double initial, size_t pages) {
+
+    if (pages == NULL) {
+        pages = defaultPages;
+    };
+
+
+    array->first = (double *)xmalloc(pages * capPageSize * sizeof(double)); //capPageSize * pages doubles
+
+    memset(array->first, NULL, pages * capPageSize * sizeof(double));
+
+
+    array->first[0] = initial;
     array->size = 0;
     array->capacity = pages * capPageSize;
 };
 
-void initBig(struct Big *big) {
+void initBig(struct Big *big, double initial) {
     big->sign = 1;
-    big->array->first = NULL;
-    big->array->size = 0;
-    big->array->capacity = 0;
+    struct dblArray *mydbl;
+    big->array = mydbl;
+    initDblArray(mydbl, initial, NULL);
 };
 
 
