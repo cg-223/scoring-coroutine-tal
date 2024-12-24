@@ -9,7 +9,6 @@
 #define allocBig() (struct Big *)xmalloc(sizeof(struct Big))
 //TODO (from the readme of OmegaNum)
 /*
-    abs
     cmp
     gt
     gte
@@ -29,7 +28,6 @@
     ispos
     isneg
     isfinite
-    isint
     floor
     ceiling
     round
@@ -81,7 +79,9 @@
 int maxArrow = 1000;
 int capPageSize = 32; //power of 2
 size_t defaultPages = 1; 
-
+long long int maxSafeInt = 9e9; //arbitrary
+long long int minSafeInt = -9e9;
+//we use llongs
 struct dblArray {
     double *first;
     size_t size;
@@ -123,7 +123,6 @@ void initDblArray(struct dblArray *array, double initial, size_t pages) {
     array->first = (double *)xmalloc(pages * capPageSize * sizeof(double)); //capPageSize * pages doubles
 
     memset(array->first, 0, pages * capPageSize * sizeof(double));
-
 
     array->first[0] = initial;
     array->size = 1;
@@ -176,6 +175,22 @@ void absBig(struct Big* toAbs, struct Big* absTo) {
 
 bool isBigNan(struct Big* isThisNeg) {
     return isThisNeg->nan != 0;
+};
+
+bool isBigInt(struct Big* isThisInt) {
+    if (isThisInt->array->first[0] > maxSafeInt || isThisInt->array->first[0] < minSafeInt) {
+        return true; //why do we do this? its default omeganum behavior
+    }
+    
+    if (isThisInt->array->first[1] != 0) {
+        return true;
+    }
+    if (floor(isThisInt->array->first[0]) == isThisInt->array->first[0]) {
+        return true;
+    } else if (ceil(isThisInt->array->first[0]) == isThisInt->array->first[0]) {
+        return true;
+    }
+    return false;
 };
 
 double toDouble(struct Big *big) {
@@ -251,5 +266,11 @@ int main() {
     printf("After abs: %3.3f\n", toDouble(absThis));
     freeThisBig(initial);
     freeThisBig(negTo);
+    struct Big *thisIsInteger = allocBig();
+    struct Big *thisIsNotInteger = allocBig();
+    initBig(thisIsInteger, (double)(30000));
+    initBig(thisIsNotInteger, ((double)(9e9 - 100)) * 0.95435253425234623454325324532453242);
+    printf("Int check should be true: %d\n", (int)isBigInt(thisIsInteger));
+    printf("Int check should be false: %d", (int)isBigInt(thisIsNotInteger));
     return 0;
 };
