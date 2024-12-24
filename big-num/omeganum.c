@@ -147,7 +147,29 @@ void initBig(struct Big *big, double initial) {
     struct dblArray *mydbl = (struct dblArray *)xmalloc(sizeof(struct dblArray));
     big->array = mydbl;
     initDblArray(mydbl, initial, SNULL);
-}
+};
+
+void copyBig(struct Big* toCopy, struct Big* thisBig) {
+    thisBig->sign = toCopy->sign;
+    thisBig->nan = toCopy->nan;
+    
+    struct dblArray *mydbl = (struct dblArray *)xmalloc(sizeof(struct dblArray));
+    thisBig->array = mydbl;
+
+
+
+
+    mydbl->first = (double *)xmalloc(toCopy->array->capacity * sizeof(double)); //capPageSize * pages doubles
+    memcpy(mydbl->first, toCopy->array->first, toCopy->array->capacity * sizeof(double));
+
+    mydbl->size = 1;
+    mydbl->capacity = toCopy->array->capacity;
+};
+
+void negBig(struct Big* toNeg, struct Big* thisBig) {
+    copyBig(toNeg, thisBig);
+    thisBig->sign = -(thisBig->sign);
+};
 
 double toDouble(struct Big *big) {
     double toReturn = 0;
@@ -177,7 +199,7 @@ double toDouble(struct Big *big) {
     //if (self.array[2]==1) then
     //    return math.pow(10,self.array[1]);
     //end
-    return big->array->first[0];
+    return big->array->first[0] * big->sign;
 };
 
 void freeBig(struct Big *big) {
@@ -201,6 +223,13 @@ int main() {
     };
     end = clock();
     diff = ((double)(end - start)) / CLOCKS_PER_SEC;
-    printf("Finished in %3.6f", diff);
+    printf("Finished in %3.6f\n", diff);
+
+    struct Big *initial = allocBig();
+    struct Big *negTo = allocBig();
+    initBig(initial, 5);
+    printf("Before copy: %3.3f\n", toDouble(initial));
+    negBig(initial, negTo);
+    printf("After copy: %3.3f\n", toDouble(negTo));
     return 0;
 };
