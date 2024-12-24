@@ -10,7 +10,6 @@
 //TODO (from the readme of OmegaNum)
 /*
     abs
-    neg
     cmp
     gt
     gte
@@ -29,7 +28,6 @@
     max
     ispos
     isneg
-    isnan
     isfinite
     isint
     floor
@@ -171,12 +169,20 @@ void negBig(struct Big* toNeg, struct Big* thisBig) {
     thisBig->sign = -(thisBig->sign);
 };
 
+bool isBigNan(struct Big* isThisNeg) {
+    return isThisNeg->nan == 0;
+};
+
 double toDouble(struct Big *big) {
     double toReturn = 0;
     if (big->sign == -1) {
-        //return -1*(self:neg():to_number())
+        struct Big* toGiveRet = allocBig();
+        negBig(big, toGiveRet);
+        double toRetDoub = toGiveRet->array->first[0] * -1;
+        freeBig(toGiveRet);
+        return toRetDoub;
     };
-    if (big->nan != 0) {
+    if (isBigNan(big)) {
         return NAN;
     };
 
@@ -199,7 +205,7 @@ double toDouble(struct Big *big) {
     //if (self.array[2]==1) then
     //    return math.pow(10,self.array[1]);
     //end
-    return big->array->first[0] * big->sign;
+    return big->array->first[0];
 };
 
 void freeBig(struct Big *big) {
@@ -228,8 +234,10 @@ int main() {
     struct Big *initial = allocBig();
     struct Big *negTo = allocBig();
     initBig(initial, 5);
-    printf("Before copy: %3.3f\n", toDouble(initial));
+    printf("Before copy to negative: %3.3f\n", toDouble(initial));
     negBig(initial, negTo);
-    printf("After copy: %3.3f\n", toDouble(negTo));
+    printf("After copy to negative: %3.3f\n", toDouble(negTo));
+    freeBig(initial);
+    freeBig(negTo);
     return 0;
 };
