@@ -3,12 +3,11 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-
-
+#define SNULL (size_t)0
 
 int maxArrow = 1000;
 int capPageSize = 32; //power of 2
-int defaultPages = 1; 
+size_t defaultPages = 1; 
 
 struct dblArray {
     double *first;
@@ -39,7 +38,7 @@ void* xmalloc(size_t size) {
 
 void initDblArray(struct dblArray *array, double initial, size_t pages) {
 
-    if (pages == NULL) {
+    if (pages == SNULL) {
         pages = defaultPages;
     };
 
@@ -58,7 +57,7 @@ void initBig(struct Big *big, double initial) {
     big->sign = 1;
     struct dblArray *mydbl = (struct dblArray *)xmalloc(sizeof(struct dblArray));
     big->array = mydbl;
-    initDblArray(mydbl, initial, NULL);
+    initDblArray(mydbl, initial, SNULL);
 }
 
 double toDouble(struct Big *big) {
