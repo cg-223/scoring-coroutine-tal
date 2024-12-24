@@ -169,6 +169,11 @@ void negBig(struct Big* toNeg, struct Big* thisBig) {
     thisBig->sign = -(thisBig->sign);
 };
 
+void absBig(struct Big* toAbs, struct Big* absTo) {
+    copyBig(toAbs, absTo);
+    absTo->sign = 1;
+}
+
 bool isBigNan(struct Big* isThisNeg) {
     return isThisNeg->nan != 0;
 };
@@ -241,6 +246,9 @@ int main() {
     printf("Before copy to negative: %3.3f\n", toDouble(initial));
     negBig(initial, negTo);
     printf("After copy to negative: %3.3f\n", toDouble(negTo));
+    struct Big *absThis = allocBig();
+    absBig(negTo, absThis);
+    printf("After abs: %3.3f\n", toDouble(absThis));
     freeThisBig(initial);
     freeThisBig(negTo);
     return 0;
