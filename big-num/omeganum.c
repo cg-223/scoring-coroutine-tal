@@ -98,13 +98,6 @@ void freeBig(struct Big *big) {
 };
 
 
-
-bool ext = true;
-
-
-char omegaNumError[] = "[OmegaNumError] ";
-char invalidArgument[] = "[OmegaNumError] Invalid Argument: ";
-
 int main() {
     struct Big *ourBig = allocBig();
 
