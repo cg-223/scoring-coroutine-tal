@@ -21,6 +21,7 @@ struct dblArray {
 struct Big {
     struct dblArray *array;
     int sign;
+    int nan;
 };
 
 void checkNull(void* thing) {
@@ -58,6 +59,7 @@ void initDblArray(struct dblArray *array, double initial, size_t pages) {
 
 void initBig(struct Big *big, double initial) {
     big->sign = 1;
+    big->nan = 0;
     struct dblArray *mydbl = (struct dblArray *)xmalloc(sizeof(struct dblArray));
     big->array = mydbl;
     initDblArray(mydbl, initial, SNULL);
@@ -67,6 +69,9 @@ double toDouble(struct Big *big) {
     double toReturn = 0;
     if (big->sign == -1) {
         //return -1*(self:neg():to_number())
+    };
+    if (big->nan != 0) {
+        return NAN;
     };
 
     //if ((#self.array>=2) and ((self.array[2]>=2) or (self.array[2]==1) and (self.array[1]>308))) then
@@ -108,10 +113,13 @@ int main() {
     double diff;
     start = clock();
 
-    for (int i = 1; i < 30000000; i++) {
+    for (int i = 1; i <= 30000000; i++) {
         struct Big *testBig = allocBig();
         initBig(testBig, i);
         freeBig(testBig);
+        if (i % 100000 == 0) {
+            printf("%10.6f\n", toDouble(testBig));
+        };
     };
 
     end = clock();
