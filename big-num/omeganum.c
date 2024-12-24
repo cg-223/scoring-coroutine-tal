@@ -92,7 +92,6 @@ void freeBig(struct Big *big) {
     free(big->array->first);
     free(big->array);
     free(big);
-    big->sign = 0; 
 };
 
 bool ext = true;
@@ -105,7 +104,12 @@ int main() {
     struct Big *ourBig = (struct Big *)xmalloc(sizeof(struct Big));
 
     initBig(ourBig, 3);
-    printf("Final double: %1.0f. ", toDouble(ourBig));
-    freeBig(ourBig);
+    printf("Final double: %1.0f.\n", toDouble(ourBig));
+    for (int i = 1; i < 10000; i++) {
+        struct Big *testBig = (struct Big *)xmalloc(sizeof(struct Big));
+        initBig(testBig, 3);
+        printf("Final double: %1.0f. ", toDouble(testBig));
+        freeBig(testBig);
+    };
     return 0;
 };
