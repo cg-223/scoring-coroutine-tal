@@ -3,7 +3,10 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
+
 #define SNULL (size_t)0
+#define allocBig() (struct Big *)xmalloc(sizeof(struct Big))
 
 int maxArrow = 1000;
 int capPageSize = 32; //power of 2
@@ -94,6 +97,8 @@ void freeBig(struct Big *big) {
     free(big);
 };
 
+
+
 bool ext = true;
 
 
@@ -101,15 +106,23 @@ char omegaNumError[] = "[OmegaNumError] ";
 char invalidArgument[] = "[OmegaNumError] Invalid Argument: ";
 
 int main() {
-    struct Big *ourBig = (struct Big *)xmalloc(sizeof(struct Big));
+    struct Big *ourBig = allocBig();
 
     initBig(ourBig, 3);
     printf("Final double: %1.0f.\n", toDouble(ourBig));
-    for (int i = 1; i < 10000; i++) {
-        struct Big *testBig = (struct Big *)xmalloc(sizeof(struct Big));
-        initBig(testBig, 3);
-        printf("Final double: %1.0f. ", toDouble(testBig));
+
+    clock_t start, end;
+    double diff;
+    start = clock();
+
+    for (int i = 1; i < 30000000; i++) {
+        struct Big *testBig = allocBig();
+        initBig(testBig, i);
         freeBig(testBig);
     };
+
+    end = clock();
+    diff = ((double)(end - start)) / CLOCKS_PER_SEC;
+    printf("Finished in %3.6f", diff);
     return 0;
 };
