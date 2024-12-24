@@ -65,6 +65,7 @@ double toDouble(struct Big *big) {
     if (big->sign == -1) {
         //return -1*(self:neg():to_number())
     };
+
     //if ((#self.array>=2) and ((self.array[2]>=2) or (self.array[2]==1) and (self.array[1]>308))) then
     //    return R.POSITIVE_INFINITY;
     //end
@@ -87,6 +88,13 @@ double toDouble(struct Big *big) {
     return big->array->first[0];
 };
 
+void freeBig(struct Big *big) {
+    free(big->array->first);
+    free(big->array);
+    free(big);
+    big->sign = 0; 
+};
+
 bool ext = true;
 
 
@@ -98,5 +106,6 @@ int main() {
 
     initBig(ourBig, 3);
     printf("Final double: %1.0f. ", toDouble(ourBig));
+    freeBig(ourBig);
     return 0;
 };
