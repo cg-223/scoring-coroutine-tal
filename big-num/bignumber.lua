@@ -1,3 +1,4 @@
+---@diagnostic disable: duplicate-set-field, need-check-nil, param-type-mismatch, undefined-global
 -- class table
 Big = {
     m = 0,

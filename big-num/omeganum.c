@@ -199,7 +199,7 @@ double toDouble(struct Big *big) {
         struct Big* toGiveRet = allocBig();
         negBig(big, toGiveRet);
         double toRetDoub = toGiveRet->array->first[0] * -1;
-        freeThisBig(toGiveRet);
+        freeBig(toGiveRet);
         return toRetDoub;
     };
     if (isBigNan(big)) {
@@ -228,7 +228,7 @@ double toDouble(struct Big *big) {
     return big->array->first[0];
 };
 
-int freeThisBig(struct Big *big) {
+int freeBig(struct Big *big) {
     free(big->array->first);
     free(big->array);
     free(big);
@@ -246,7 +246,7 @@ int main() {
         if ((double)i != toDouble(testBig)) {
             printf("Mismatched bigs! %3.3f, %3.3f\n", (double)i, toDouble(testBig));
         };
-        freeThisBig(testBig);
+        freeBig(testBig);
         if (i % 1000000 == 0) {
             printf("%10.6f\n", toDouble(testBig));
         };
@@ -264,8 +264,8 @@ int main() {
     struct Big *absThis = allocBig();
     absBig(negTo, absThis);
     printf("After abs: %3.3f\n", toDouble(absThis));
-    freeThisBig(initial);
-    freeThisBig(negTo);
+    freeBig(initial);
+    freeBig(negTo);
     struct Big *thisIsInteger = allocBig();
     struct Big *thisIsNotInteger = allocBig();
     initBig(thisIsInteger, (double)(30000));

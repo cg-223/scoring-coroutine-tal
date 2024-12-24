@@ -1,3 +1,4 @@
+---@diagnostic disable: duplicate-set-field, need-check-nil, deprecated, redundant-parameter, param-type-mismatch, cast-local-type, undefined-field, undefined-global, lowercase-global
 --OmegaNum port by Mathguy
 Big = {
     array = {},

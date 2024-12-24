@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 local lovely = require("lovely")
 local nativefs = require("nativefs")
 Notation = nativefs.load(lovely.mod_dir.."/Talisman/big-num/notations/notation.lua")()
