@@ -96,6 +96,8 @@ struct Big {
     int nan;
 };
 
+//unused as of now
+//xmalloc uses its own thing
 void checkNull(void* thing) {
     if (thing == NULL) {
         perror("oom");
@@ -112,6 +114,7 @@ void* xmalloc(size_t size) {
     return ourptr;
 };
 
+//initialize array, allocate initial space for array. set an initial value. 
 void initDblArray(struct dblArray *array, double initial, size_t pages) {
 
     if (pages == SNULL) {
@@ -125,8 +128,17 @@ void initDblArray(struct dblArray *array, double initial, size_t pages) {
 
 
     array->first[0] = initial;
-    array->size = 0;
+    array->size = 1;
     array->capacity = pages * capPageSize;
+};
+
+void reallocArray(struct dblArray *array) {
+    double* newptr = realloc(array->first, array->capacity + (capPageSize * sizeof(double)));
+
+    if (newptr == NULL) {
+        perror("oom");
+        exit(EXIT_FAILURE);
+    }
 };
 
 void initBig(struct Big *big, double initial) {
@@ -176,24 +188,17 @@ void freeBig(struct Big *big) {
 
 
 int main() {
-    struct Big *ourBig = allocBig();
-
-    initBig(ourBig, 3);
-    printf("Final double: %1.0f.\n", toDouble(ourBig));
-
     clock_t start, end;
     double diff;
     start = clock();
-
-    for (int i = 1; i <= 30000000; i++) {
+    for (int i = 1; i <= 3000000; i++) {
         struct Big *testBig = allocBig();
         initBig(testBig, i);
         freeBig(testBig);
-        if (i % 100000 == 0) {
+        if (i % 1000000 == 0) {
             printf("%10.6f\n", toDouble(testBig));
         };
     };
-
     end = clock();
     diff = ((double)(end - start)) / CLOCKS_PER_SEC;
     printf("Finished in %3.6f", diff);
