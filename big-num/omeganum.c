@@ -7,6 +7,78 @@
 
 #define SNULL (size_t)0
 #define allocBig() (struct Big *)xmalloc(sizeof(struct Big))
+//TODO (from the readme of OmegaNum)
+/*
+    abs
+    neg
+    cmp
+    gt
+    gte
+    lt
+    lte
+    eq
+    neq
+    cmp_tolerance
+    gt_tolerance
+    gte_tolerance
+    lt_tolerance
+    lte_tolerance
+    eq_tolerance
+    neq_tolerance
+    min
+    max
+    ispos
+    isneg
+    isnan
+    isfinite
+    isint
+    floor
+    ceiling
+    round
+    add
+    sub
+    mul
+    div
+    rec
+    mod
+    gamma
+    fact
+    pow
+    exp
+    sqrt
+    cbrt
+    root
+    log10
+    logBase
+    log
+    ln
+    lambertw
+    tetr
+    iteratedexp
+    iteratedlog
+    layeradd
+    layeradd10
+    ssrt
+    linear_sroot
+    slog
+    pent
+    arrow
+    chain
+    hyper
+    affordGeometricSeries
+    affordArithmeticSeries
+    sumGeometricSeries
+    sumArithmeticSeries
+    choose
+    toString
+    toValue
+    toStringWithDecimalPlaces
+    toExponential
+    toFixed
+    toPrecision
+    toJSON
+    toHyperE
+*/
 
 int maxArrow = 1000;
 int capPageSize = 32; //power of 2
