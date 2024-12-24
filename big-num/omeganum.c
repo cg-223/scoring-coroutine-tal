@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define SNULL (size_t)0
+#define SNULL (size_t)NULL
 #define allocBig() (struct Big *)xmalloc(sizeof(struct Big))
 //TODO (from the readme of OmegaNum)
 /*
@@ -170,7 +170,7 @@ void negBig(struct Big* toNeg, struct Big* thisBig) {
 };
 
 bool isBigNan(struct Big* isThisNeg) {
-    return isThisNeg->nan == 0;
+    return isThisNeg->nan != 0;
 };
 
 double toDouble(struct Big *big) {
@@ -179,7 +179,7 @@ double toDouble(struct Big *big) {
         struct Big* toGiveRet = allocBig();
         negBig(big, toGiveRet);
         double toRetDoub = toGiveRet->array->first[0] * -1;
-        freeBig(toGiveRet);
+        freeThisBig(toGiveRet);
         return toRetDoub;
     };
     if (isBigNan(big)) {
@@ -208,10 +208,11 @@ double toDouble(struct Big *big) {
     return big->array->first[0];
 };
 
-void freeBig(struct Big *big) {
+int freeThisBig(struct Big *big) {
     free(big->array->first);
     free(big->array);
     free(big);
+    return 0;
 };
 
 
@@ -222,7 +223,10 @@ int main() {
     for (int i = 1; i <= 3000000; i++) {
         struct Big *testBig = allocBig();
         initBig(testBig, i);
-        freeBig(testBig);
+        if ((double)i != toDouble(testBig)) {
+            printf("Mismatched bigs! %3.3f, %3.3f\n", (double)i, toDouble(testBig));
+        };
+        freeThisBig(testBig);
         if (i % 1000000 == 0) {
             printf("%10.6f\n", toDouble(testBig));
         };
@@ -237,7 +241,7 @@ int main() {
     printf("Before copy to negative: %3.3f\n", toDouble(initial));
     negBig(initial, negTo);
     printf("After copy to negative: %3.3f\n", toDouble(negTo));
-    freeBig(initial);
-    freeBig(negTo);
+    freeThisBig(initial);
+    freeThisBig(negTo);
     return 0;
 };
