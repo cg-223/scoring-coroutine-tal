@@ -193,6 +193,55 @@ bool isBigInt(struct Big* isThisInt) {
     return false;
 };
 
+void bigMul(struct Big* mulFromThis, struct Big* mulToThis) {
+    //TODO: handle negatives, handle nans, handle infinities, handle zeroes, handle ones
+    //handle very large numbers
+
+    //this uses add, pow, and log10, we need to make those first
+}
+
+void bigAdd(struct Big* addFromThis, struct Big* addToThis) {
+    //TODO: handle negatives, handle nans, handle infinities, handle zeroes, handle ones
+    //handle very large numbers
+}
+
+struct Big* bigMin(struct Big* firstMin, struct Big* secondMin) {
+
+}
+
+struct Big* bigMax(struct Big* firstMax, struct Big* secondMax) {
+    
+}
+
+//-1 = second is larger
+//0 = they are equal
+//1 = first is larger
+//2 = nan
+
+int compareBig(struct Big* firstComp, struct Big* secondComp) {
+    if (isBigNan(firstComp) || isBigNan(secondComp)) {
+        return 2;
+    }
+    //TODO: handle infinities
+    if (firstComp->sign != secondComp->sign) {
+        return firstComp->sign;
+    }
+
+    int firstSign = firstComp->sign;
+    int toRetPreSignage = 0;
+    if (firstComp->array->size != secondComp->array->size) {
+        toRetPreSignage = (firstComp->array->size > secondComp->array->size)*2-1;
+    } else {
+        for (int i = firstComp->array->size - 1; i >= 0; i--) {
+            if (firstComp->array->first[i] != secondComp->array->first[i]) {
+                toRetPreSignage = (firstComp->array->first[i] < secondComp->array->first[i])*2-1;
+                break;
+            }
+        }
+    }
+    return toRetPreSignage * firstSign;
+}
+
 double toDouble(struct Big *big) {
     double toReturn = 0;
     if (big->sign == -1) {
@@ -248,7 +297,7 @@ int main() {
         };
         freeBig(testBig);
         if (i % 1000000 == 0) {
-            printf("%10.6f\n", toDouble(testBig));
+            printf("Finished %1.0f initiations & frees of bigs.\n", toDouble(testBig));
         };
     };
     end = clock();
@@ -271,6 +320,21 @@ int main() {
     initBig(thisIsInteger, (double)(30000));
     initBig(thisIsNotInteger, ((double)(9e9 - 100)) * 0.95435253425234623454325324532453242);
     printf("Int check should be true: %d\n", (int)isBigInt(thisIsInteger));
-    printf("Int check should be false: %d", (int)isBigInt(thisIsNotInteger));
+    printf("Int check should be false: %d\n", (int)isBigInt(thisIsNotInteger));
+    struct Big *forComparison1 = allocBig();
+    struct Big *forComparison2 = allocBig();
+    initBig(forComparison1, 10);
+    initBig(forComparison2, 20);
+    int result = compareBig(forComparison1, forComparison2);
+    printf("Result should be 1: %d\n", result);
+    result = compareBig(forComparison2, forComparison1);
+    printf("Result should be -1: %d\n", result);
+    forComparison2->array->first[0] = 10;
+    result = compareBig(forComparison1, forComparison2);
+    printf("Result should be 0: %d\n", result);
+    result = compareBig(forComparison1, forComparison1);
+    printf("Result should be 0: %d\n", result);
+    freeBig(forComparison1);
+    freeBig(forComparison2);
     return 0;
 };
