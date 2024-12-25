@@ -213,14 +213,6 @@ void bigAdd(Big addFromThis, Big addToThis) {
     //handle very large numbers
 }
 
-Big bigMin(Big firstMin, Big secondMin) {
-
-}
-
-Big bigMax(Big firstMax, Big secondMax) {
-    
-}
-
 //-1 = second is larger
 //0 = they are equal
 //1 = first is larger
@@ -241,6 +233,7 @@ Big log10Big(Big toLog10) {
 
 int compareBig(Big firstComp, Big secondComp) {
     if (isBigNan(firstComp) || isBigNan(secondComp)) {
+        //return 2;
         perror("nan");
         exit(_NANCODE);
     }
