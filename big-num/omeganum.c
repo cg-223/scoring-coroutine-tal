@@ -9,20 +9,6 @@
 #define allocBig() (struct Big *)xmalloc(sizeof(struct Big))
 //TODO (from the readme of OmegaNum)
 /*
-    cmp
-    gt
-    gte
-    lt
-    lte
-    eq
-    neq
-    cmp_tolerance
-    gt_tolerance
-    gte_tolerance
-    lt_tolerance
-    lte_tolerance
-    eq_tolerance
-    neq_tolerance
     min
     max
     ispos
@@ -173,6 +159,22 @@ void absBig(struct Big* toAbs, struct Big* absTo) {
     absTo->sign = 1;
 }
 
+struct Big* maxBig(struct Big* firstMax, struct Big* secondMax) {
+    int result = compareBig(firstMax, secondMax);
+    if (result == -1) {
+        return secondMax;
+    }
+    return firstMax;
+}
+
+struct Big* minBig(struct Big* firstMin, struct Big* secondMin) {
+    int result = compareBig(firstMin, secondMin);
+    if (result == 1) {
+        return secondMin;
+    }
+    return firstMin;
+}
+
 bool isBigNan(struct Big* isThisNeg) {
     return isThisNeg->nan != 0;
 };
@@ -240,6 +242,30 @@ int compareBig(struct Big* firstComp, struct Big* secondComp) {
         }
     }
     return toRetPreSignage * firstSign;
+}
+
+bool gtBig(struct Big* firstgt, struct Big* secondgt) {
+    return compareBig(firstgt, secondgt) == 1;
+}
+
+bool gteBig(struct Big* firstgt, struct Big* secondgt) {
+    return compareBig(firstgt, secondgt) > -1;
+}
+
+bool ltBig(struct Big* firstgt, struct Big* secondgt) {
+    return compareBig(firstgt, secondgt) == -1;
+}
+
+bool lteBig(struct Big* firstgt, struct Big* secondgt) {
+    return compareBig(firstgt, secondgt) < 1;
+}
+
+bool eqBig(struct Big* firstgt, struct Big* secondgt) {
+    return compareBig(firstgt, secondgt) == 0;
+}
+
+bool neqBig(struct Big* firstgt, struct Big* secondgt) {
+    return compareBig(firstgt, secondgt) != 0;
 }
 
 double toDouble(struct Big *big) {
