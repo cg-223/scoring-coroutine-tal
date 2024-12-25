@@ -98,6 +98,10 @@ void* xmalloc(size_t size) {
     return ourptr;
 };
 
+Big ZEROBIG;
+Big NANBIG;
+Big MAXINT;
+
 //initialize array, allocate initial space for array. set an initial value. 
 void initDblArray(struct dblArray *array, double initial, size_t pages) {
 
@@ -222,9 +226,23 @@ Big bigMax(Big firstMax, Big secondMax) {
 //1 = first is larger
 //2 = nan
 
+
+
+Big log10Big(Big toLog10) {
+    Big newBig = allocBig();
+    copyBig(toLog10, newBig);
+    //todo: handle zeroes and negatives
+    //todo: handle unsafe numbers
+    //todo: handle infinities
+    //todo: handle highly large numbers
+    newBig->array->first[1] = (double)(min(newBig->array->first[1] - 1, 0));
+    return newBig;
+}
+
 int compareBig(Big firstComp, Big secondComp) {
     if (isBigNan(firstComp) || isBigNan(secondComp)) {
-        return 2;
+        perror("nan");
+        exit(_NANCODE);
     }
     //TODO: handle infinities
     if (firstComp->sign != secondComp->sign) {
@@ -314,6 +332,8 @@ int freeBig(Big big) {
 
 
 int main() {
+
+
     clock_t start, end;
     double diff;
     start = clock();
