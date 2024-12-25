@@ -100,7 +100,7 @@ void* xmalloc(size_t size) {
 
 Big ZEROBIG;
 Big NANBIG;
-Big MAXINT;
+Big MAXBIGINT;
 
 //initialize array, allocate initial space for array. set an initial value. 
 void initDblArray(struct dblArray *array, double initial, size_t pages) {
@@ -208,9 +208,42 @@ void bigMul(Big mulFromThis, Big mulToThis) {
     //this uses add, pow, and log10, we need to make those first
 }
 
-void bigAdd(Big addFromThis, Big addToThis) {
+Big bigAdd(Big add1, Big add2) {
     //TODO: handle negatives, handle nans, handle infinities, handle zeroes, handle ones
     //handle very large numbers
+    //cg you better make sure this function doesnt memleak
+    Big clone1 = allocBig();
+    Big clone2 = allocBig();
+    copyBig(add1, clone1);
+    copyBig(add2, clone2);
+    if (clone1->sign == -1) {
+        //todo: handle this weird chaining bs
+        //x:neg():add(other:neg()):neg()
+    }
+    if (clone2->sign == -1) {
+        //todo: handle this weird chaining less bs
+        //return x:sub(other:neg());
+    }
+    if (eqBig(clone1, ZEROBIG)) {
+        return clone2;
+    }
+    if (eqBig(clone2, ZEROBIG)) {
+        return clone1;
+    }
+    //todo: handle nans and infinities
+
+    Big lesser = minBig(clone1, clone2);
+    Big bigger = maxBig(clone1, clone2);
+    Big final = allocBig(); //copy to this
+    //inefficient? todo: make a better function for this
+    if (lesser->array->first[1] == 2 && !gtBig(lesser, MAXBIGINT)) {
+        lesser->array->first[1] = 1;
+        lesser->array->first[0] = pow(10, (lesser->array->first[0]));
+    }
+    if (bigger->array->first[1] == 2 && !gtBig(bigger, MAXBIGINT)) {
+        bigger->array->first[1] = 1;
+        bigger->array->first[0] = pow(10, (bigger->array->first[0]));
+    }
 }
 
 //-1 = second is larger
