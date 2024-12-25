@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <math.h>
-#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
@@ -181,24 +180,24 @@ Big minBig(Big firstMin, Big secondMin) {
 
 
 
-bool isBigNan(Big isThisNeg) {
+int isBigNan(Big isThisNeg) {
     return isThisNeg->nan != 0;
 };
 
-bool isBigInt(Big isThisInt) {
+int isBigInt(Big isThisInt) {
     if (isThisInt->array->first[0] > maxSafeInt || isThisInt->array->first[0] < minSafeInt) {
-        return true; //why do we do this? its default omeganum behavior
+        return 1; //why do we do this? its default omeganum behavior
     }
     
     if (isThisInt->array->first[1] != 0) {
-        return true;
+        return 1;
     }
     if (floor(isThisInt->array->first[0]) == isThisInt->array->first[0]) {
-        return true;
+        return 1;
     } else if (ceil(isThisInt->array->first[0]) == isThisInt->array->first[0]) {
-        return true;
+        return 1;
     }
-    return false;
+    return 0;
 };
 
 void bigMul(Big mulFromThis, Big mulToThis) {
@@ -244,7 +243,27 @@ Big bigAdd(Big add1, Big add2) {
         bigger->array->first[1] = 1;
         bigger->array->first[0] = pow(10, (bigger->array->first[0]));
     }
+    if (gtBig(bigger, MAXBIGINT) || bigDivAndGt(bigger, lesser, MAXBIGINT)) {
+        copyBig(final, bigger);
+    }
+
+    return final;
 }
+
+//unsafe: creates a new big
+Big bigDiv(Big big1, Big big2) {
+
+}
+
+//safe, creates a new big but cleans up after itself
+int bigDivAndGt(Big div1, Big div2, Big greaterThan) {
+    Big afterDiv = bigDiv(div1, div2);
+    int result =  gtBig(afterDiv, greaterThan);
+    freeBig(afterDiv);
+    return result;
+}
+
+
 
 //-1 = second is larger
 //0 = they are equal
@@ -252,7 +271,8 @@ Big bigAdd(Big add1, Big add2) {
 //2 = nan
 
 
-
+//unsafe: we make a new big here
+//must free the return from this, and the argument
 Big log10Big(Big toLog10) {
     Big newBig = allocBig();
     copyBig(toLog10, newBig);
@@ -264,6 +284,7 @@ Big log10Big(Big toLog10) {
     return newBig;
 }
 
+//safe
 int compareBig(Big firstComp, Big secondComp) {
     if (isBigNan(firstComp) || isBigNan(secondComp)) {
         //return 2;
@@ -290,30 +311,37 @@ int compareBig(Big firstComp, Big secondComp) {
     return toRetPreSignage * firstSign;
 }
 
-bool gtBig(Big firstgt, Big secondgt) {
+//safe
+int gtBig(Big firstgt, Big secondgt) {
     return compareBig(firstgt, secondgt) == 1;
 }
 
-bool gteBig(Big firstgt, Big secondgt) {
+//safe
+int gteBig(Big firstgt, Big secondgt) {
     return compareBig(firstgt, secondgt) > -1;
 }
 
-bool ltBig(Big firstgt, Big secondgt) {
+//safe
+int ltBig(Big firstgt, Big secondgt) {
     return compareBig(firstgt, secondgt) == -1;
 }
 
-bool lteBig(Big firstgt, Big secondgt) {
+//safe
+int lteBig(Big firstgt, Big secondgt) {
     return compareBig(firstgt, secondgt) < 1;
 }
 
-bool eqBig(Big firstgt, Big secondgt) {
+//safe
+int eqBig(Big firstgt, Big secondgt) {
     return compareBig(firstgt, secondgt) == 0;
 }
 
-bool neqBig(Big firstgt, Big secondgt) {
+//safe
+int neqBig(Big firstgt, Big secondgt) {
     return compareBig(firstgt, secondgt) != 0;
 }
 
+//safe: creates a new big, but frees it afterwards
 double toDouble(Big big) {
     double toReturn = 0;
     if (big->sign == -1) {
@@ -349,6 +377,7 @@ double toDouble(Big big) {
     return big->array->first[0];
 };
 
+//safe
 int freeBig(Big big) {
     free(big->array->first);
     free(big->array);
