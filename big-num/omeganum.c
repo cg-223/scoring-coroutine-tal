@@ -4,9 +4,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-
+typedef struct Big* Big;
 #define SNULL (size_t)NULL
-#define allocBig() (struct Big *)xmalloc(sizeof(struct Big))
+#define allocBig() (Big )xmalloc(sizeof(struct Big))
 //TODO (from the readme of OmegaNum)
 /*
     min
@@ -124,7 +124,7 @@ void reallocArray(struct dblArray *array) {
     }
 };
 
-void initBig(struct Big *big, double initial) {
+void initBig(Big big, double initial) {
     big->sign = 1;
     big->nan = 0;
     struct dblArray *mydbl = (struct dblArray *)xmalloc(sizeof(struct dblArray));
@@ -132,7 +132,7 @@ void initBig(struct Big *big, double initial) {
     initDblArray(mydbl, initial, SNULL);
 };
 
-void copyBig(struct Big* toCopy, struct Big* thisBig) {
+void copyBig(Big toCopy, Big thisBig) {
     thisBig->sign = toCopy->sign;
     thisBig->nan = toCopy->nan;
     
@@ -149,17 +149,17 @@ void copyBig(struct Big* toCopy, struct Big* thisBig) {
     mydbl->capacity = toCopy->array->capacity;
 };
 
-void negBig(struct Big* toNeg, struct Big* thisBig) {
+void negBig(Big toNeg, Big thisBig) {
     copyBig(toNeg, thisBig);
     thisBig->sign = -(thisBig->sign);
 };
 
-void absBig(struct Big* toAbs, struct Big* absTo) {
+void absBig(Big toAbs, Big absTo) {
     copyBig(toAbs, absTo);
     absTo->sign = 1;
 }
 
-struct Big* maxBig(struct Big* firstMax, struct Big* secondMax) {
+Big maxBig(Big firstMax, Big secondMax) {
     int result = compareBig(firstMax, secondMax);
     if (result == -1) {
         return secondMax;
@@ -167,7 +167,7 @@ struct Big* maxBig(struct Big* firstMax, struct Big* secondMax) {
     return firstMax;
 }
 
-struct Big* minBig(struct Big* firstMin, struct Big* secondMin) {
+Big minBig(Big firstMin, Big secondMin) {
     int result = compareBig(firstMin, secondMin);
     if (result == 1) {
         return secondMin;
@@ -175,11 +175,13 @@ struct Big* minBig(struct Big* firstMin, struct Big* secondMin) {
     return firstMin;
 }
 
-bool isBigNan(struct Big* isThisNeg) {
+
+
+bool isBigNan(Big isThisNeg) {
     return isThisNeg->nan != 0;
 };
 
-bool isBigInt(struct Big* isThisInt) {
+bool isBigInt(Big isThisInt) {
     if (isThisInt->array->first[0] > maxSafeInt || isThisInt->array->first[0] < minSafeInt) {
         return true; //why do we do this? its default omeganum behavior
     }
@@ -195,23 +197,23 @@ bool isBigInt(struct Big* isThisInt) {
     return false;
 };
 
-void bigMul(struct Big* mulFromThis, struct Big* mulToThis) {
+void bigMul(Big mulFromThis, Big mulToThis) {
     //TODO: handle negatives, handle nans, handle infinities, handle zeroes, handle ones
     //handle very large numbers
 
     //this uses add, pow, and log10, we need to make those first
 }
 
-void bigAdd(struct Big* addFromThis, struct Big* addToThis) {
+void bigAdd(Big addFromThis, Big addToThis) {
     //TODO: handle negatives, handle nans, handle infinities, handle zeroes, handle ones
     //handle very large numbers
 }
 
-struct Big* bigMin(struct Big* firstMin, struct Big* secondMin) {
+Big bigMin(Big firstMin, Big secondMin) {
 
 }
 
-struct Big* bigMax(struct Big* firstMax, struct Big* secondMax) {
+Big bigMax(Big firstMax, Big secondMax) {
     
 }
 
@@ -220,7 +222,7 @@ struct Big* bigMax(struct Big* firstMax, struct Big* secondMax) {
 //1 = first is larger
 //2 = nan
 
-int compareBig(struct Big* firstComp, struct Big* secondComp) {
+int compareBig(Big firstComp, Big secondComp) {
     if (isBigNan(firstComp) || isBigNan(secondComp)) {
         return 2;
     }
@@ -244,34 +246,34 @@ int compareBig(struct Big* firstComp, struct Big* secondComp) {
     return toRetPreSignage * firstSign;
 }
 
-bool gtBig(struct Big* firstgt, struct Big* secondgt) {
+bool gtBig(Big firstgt, Big secondgt) {
     return compareBig(firstgt, secondgt) == 1;
 }
 
-bool gteBig(struct Big* firstgt, struct Big* secondgt) {
+bool gteBig(Big firstgt, Big secondgt) {
     return compareBig(firstgt, secondgt) > -1;
 }
 
-bool ltBig(struct Big* firstgt, struct Big* secondgt) {
+bool ltBig(Big firstgt, Big secondgt) {
     return compareBig(firstgt, secondgt) == -1;
 }
 
-bool lteBig(struct Big* firstgt, struct Big* secondgt) {
+bool lteBig(Big firstgt, Big secondgt) {
     return compareBig(firstgt, secondgt) < 1;
 }
 
-bool eqBig(struct Big* firstgt, struct Big* secondgt) {
+bool eqBig(Big firstgt, Big secondgt) {
     return compareBig(firstgt, secondgt) == 0;
 }
 
-bool neqBig(struct Big* firstgt, struct Big* secondgt) {
+bool neqBig(Big firstgt, Big secondgt) {
     return compareBig(firstgt, secondgt) != 0;
 }
 
-double toDouble(struct Big *big) {
+double toDouble(Big big) {
     double toReturn = 0;
     if (big->sign == -1) {
-        struct Big* toGiveRet = allocBig();
+        Big toGiveRet = allocBig();
         negBig(big, toGiveRet);
         double toRetDoub = toGiveRet->array->first[0] * -1;
         freeBig(toGiveRet);
@@ -303,7 +305,7 @@ double toDouble(struct Big *big) {
     return big->array->first[0];
 };
 
-int freeBig(struct Big *big) {
+int freeBig(Big big) {
     free(big->array->first);
     free(big->array);
     free(big);
@@ -316,7 +318,7 @@ int main() {
     double diff;
     start = clock();
     for (int i = 1; i <= 3000000; i++) {
-        struct Big *testBig = allocBig();
+        Big testBig = allocBig();
         initBig(testBig, i);
         if ((double)i != toDouble(testBig)) {
             printf("Mismatched bigs! %3.3f, %3.3f\n", (double)i, toDouble(testBig));
@@ -330,25 +332,25 @@ int main() {
     diff = ((double)(end - start)) / CLOCKS_PER_SEC;
     printf("Finished in %3.6f\n", diff);
 
-    struct Big *initial = allocBig();
-    struct Big *negTo = allocBig();
+    Big initial = allocBig();
+    Big negTo = allocBig();
     initBig(initial, 5);
     printf("Before copy to negative: %3.3f\n", toDouble(initial));
     negBig(initial, negTo);
     printf("After copy to negative: %3.3f\n", toDouble(negTo));
-    struct Big *absThis = allocBig();
+    Big absThis = allocBig();
     absBig(negTo, absThis);
     printf("After abs: %3.3f\n", toDouble(absThis));
     freeBig(initial);
     freeBig(negTo);
-    struct Big *thisIsInteger = allocBig();
-    struct Big *thisIsNotInteger = allocBig();
+    Big thisIsInteger = allocBig();
+    Big thisIsNotInteger = allocBig();
     initBig(thisIsInteger, (double)(30000));
     initBig(thisIsNotInteger, ((double)(9e9 - 100)) * 0.95435253425234623454325324532453242);
     printf("Int check should be true: %d\n", (int)isBigInt(thisIsInteger));
     printf("Int check should be false: %d\n", (int)isBigInt(thisIsNotInteger));
-    struct Big *forComparison1 = allocBig();
-    struct Big *forComparison2 = allocBig();
+    Big forComparison1 = allocBig();
+    Big forComparison2 = allocBig();
     initBig(forComparison1, 10);
     initBig(forComparison2, 20);
     int result = compareBig(forComparison1, forComparison2);
