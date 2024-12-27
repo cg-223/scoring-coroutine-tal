@@ -433,7 +433,9 @@ local oldplay = G.FUNCS.evaluate_play
 
 function G.FUNCS.evaluate_play()
     G.SCORING_COROUTINE = coroutine.create(oldplay)
+    G.SCORING_TIME_START = love.timer.getTime()
     G.LAST_SCORING_YIELD = love.timer.getTime()
+    G.TIME_SPENT_SCORING = 0
     G.CARD_CALC_COUNTS = {} -- keys = cards, values = table containing numbers
     local success, err = coroutine.resume(G.SCORING_COROUTINE)
     if not success then
@@ -465,18 +467,26 @@ function love.update(dt, ...)
                   {n = G.UIT.C, nodes = {
                     {n = G.UIT.R, config = {padding = 0.1, align = "cm"}, nodes = {
                     {n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.scoring_text, ref_value = 1}}, colours = {G.C.UI.TEXT_LIGHT}, shadow = true, pop_in = 0, scale = 1, silent = true})}},
-                    }},{n = G.UIT.R,  nodes = {
+                    }},
+                    {n = G.UIT.R,  nodes = {
                     {n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.scoring_text, ref_value = 2}}, colours = {G.C.UI.TEXT_LIGHT}, shadow = true, pop_in = 0, scale = 0.4, silent = true})}},
-                    }},{n = G.UIT.R,  nodes = {
+                    }},
+                    {n = G.UIT.R,  nodes = {
                     {n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.scoring_text, ref_value = 3}}, colours = {G.C.UI.TEXT_LIGHT}, shadow = true, pop_in = 0, scale = 0.4, silent = true})}},
-                    }},{n = G.UIT.R,  nodes = {
+                    }},
+                    {n = G.UIT.R,  nodes = {
                     {n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.scoring_text, ref_value = 4}}, colours = {G.C.UI.TEXT_LIGHT}, shadow = true, pop_in = 0, scale = 0.4, silent = true})}},
-                }}}}}
+                    }},
+                    {n = G.UIT.R,  nodes = {
+                    {n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.scoring_text, ref_value = 5}}, colours = {G.C.UI.TEXT_LIGHT}, shadow = true, pop_in = 0, scale = 0.4, silent = true})}},
+                    }},
+              }}}
                 G.FUNCS.overlay_menu({
                     definition = 
                     {n=G.UIT.ROOT, minw = G.ROOM.T.w*5, minh = G.ROOM.T.h*5, config={align = "cm", padding = 9999, offset = {x = 0, y = -3}, r = 0.1, colour = {G.C.GREY[1], G.C.GREY[2], G.C.GREY[3],0.7}}, nodes= G.SCORING_TEXT}, 
                     config = {align="cm", offset = {x=0,y=0}, major = G.ROOM_ATTACH, bond = 'Weak'}
                 })
+                G.TIME_SPENT_SCORING = G.TIME_SPENT_SCORING + (love.timer.getTime() - G.LAST_SCORING_YIELD) --for first 0.05 seconds of calculation, we need to account for it
             else
 
                 if G.OVERLAY_MENU and G.scoring_text then
@@ -489,6 +499,7 @@ function love.update(dt, ...)
                   G.scoring_text[2] = "Elapsed calculations: "..tostring(totalCalcs)
                   G.scoring_text[3] = "Cards yet to score: "..tostring(jokersYetToScore)
                   G.scoring_text[4] = "Calculations last played hand: " .. tostring(G.GAME.LAST_CALCS or "Unknown")
+                  G.scoring_text[5] = "Calculation efficiency: " .. tostring(math.floor(((G.TIME_SPENT_SCORING/(love.timer.getTime() - G.SCORING_TIME_START))*100))).."%"
                 end
 
             end
@@ -502,6 +513,7 @@ function love.update(dt, ...)
 	          G.LAST_SCORING_YIELD = love.timer.getTime()
             
             local success, msg = coroutine.resume(G.SCORING_COROUTINE)
+            G.TIME_SPENT_SCORING = G.TIME_SPENT_SCORING + (love.timer.getTime() - G.LAST_SCORING_YIELD)
             if not success then
               error(msg)
             end
