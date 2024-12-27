@@ -3,9 +3,27 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+
+struct dblArray {
+    double* first;
+    size_t size;
+    size_t capacity;
+};
+
+struct Big {
+    struct dblArray* array;
+    int sign;
+    int nan;
+};
+int maxArrow = 1000;
+int capPageSize = 32; //power of 2
+size_t defaultPages = 1;
+long long int maxSafeInt = 9e9; //arbitrary
+long long int minSafeInt = -9e9;
 typedef struct Big* Big;
 #define SNULL (size_t)NULL
-#define allocBig() (Big )xmalloc(sizeof(struct Big))
+#define allocBig() (Big)xmalloc(sizeof(struct Big))
+
 //TODO (from the readme of OmegaNum)
 /*
     min
@@ -61,23 +79,7 @@ typedef struct Big* Big;
     toHyperE
 */
 
-int maxArrow = 1000;
-int capPageSize = 32; //power of 2
-size_t defaultPages = 1; 
-long long int maxSafeInt = 9e9; //arbitrary
-long long int minSafeInt = -9e9;
 //we use llongs
-struct dblArray {
-    double *first;
-    size_t size;
-    size_t capacity;
-};
-
-struct Big {
-    struct dblArray *array;
-    int sign;
-    int nan;
-};
 
 //unused as of now
 //xmalloc uses its own thing
@@ -86,7 +88,7 @@ void checkNull(void* thing) {
         perror("oom");
         exit(EXIT_FAILURE);
     };
-};
+}
 
 void* xmalloc(size_t size) {
     void* ourptr = malloc(size);
@@ -95,21 +97,21 @@ void* xmalloc(size_t size) {
         exit(EXIT_FAILURE);
     };
     return ourptr;
-};
+}
 
 Big ZEROBIG;
 Big NANBIG;
 Big MAXBIGINT;
 
 //initialize array, allocate initial space for array. set an initial value. 
-void initDblArray(struct dblArray *array, double initial, size_t pages) {
+void initDblArray(struct dblArray* array, double initial, size_t pages) {
 
     if (pages == SNULL) {
         pages = defaultPages;
     };
 
 
-    array->first = (double *)xmalloc(pages * capPageSize * sizeof(double)); //capPageSize * pages doubles
+    array->first = (double*)xmalloc(pages * capPageSize * sizeof(double)); //capPageSize * pages doubles
 
     memset(array->first, 0, pages * capPageSize * sizeof(double));
 
@@ -118,7 +120,7 @@ void initDblArray(struct dblArray *array, double initial, size_t pages) {
     array->capacity = pages * capPageSize;
 };
 
-void reallocArray(struct dblArray *array) {
+void reallocArray(struct dblArray* array) {
     double* newptr = realloc(array->first, array->capacity + (capPageSize * sizeof(double)));
 
     if (newptr == NULL) {
@@ -130,7 +132,7 @@ void reallocArray(struct dblArray *array) {
 void initBig(Big big, double initial) {
     big->sign = 1;
     big->nan = 0;
-    struct dblArray *mydbl = (struct dblArray *)xmalloc(sizeof(struct dblArray));
+    struct dblArray* mydbl = (struct dblArray*)xmalloc(sizeof(struct dblArray));
     big->array = mydbl;
     initDblArray(mydbl, initial, SNULL);
 };
@@ -138,14 +140,14 @@ void initBig(Big big, double initial) {
 void copyBig(Big toCopy, Big thisBig) {
     thisBig->sign = toCopy->sign;
     thisBig->nan = toCopy->nan;
-    
-    struct dblArray *mydbl = (struct dblArray *)xmalloc(sizeof(struct dblArray));
+
+    struct dblArray* mydbl = (struct dblArray*)xmalloc(sizeof(struct dblArray));
     thisBig->array = mydbl;
 
 
 
 
-    mydbl->first = (double *)xmalloc(toCopy->array->capacity * sizeof(double)); //capPageSize * pages doubles
+    mydbl->first = (double*)xmalloc(toCopy->array->capacity * sizeof(double)); //capPageSize * pages doubles
     memcpy(mydbl->first, toCopy->array->first, toCopy->array->capacity * sizeof(double));
 
     mydbl->size = 1;
@@ -188,13 +190,14 @@ int isBigInt(Big isThisInt) {
     if (isThisInt->array->first[0] > maxSafeInt || isThisInt->array->first[0] < minSafeInt) {
         return 1; //why do we do this? its default omeganum behavior
     }
-    
+
     if (isThisInt->array->first[1] != 0) {
         return 1;
     }
     if (floor(isThisInt->array->first[0]) == isThisInt->array->first[0]) {
         return 1;
-    } else if (ceil(isThisInt->array->first[0]) == isThisInt->array->first[0]) {
+    }
+    else if (ceil(isThisInt->array->first[0]) == isThisInt->array->first[0]) {
         return 1;
     }
     return 0;
@@ -234,7 +237,7 @@ Big bigAdd(Big add1, Big add2) {
     Big lesser = minBig(clone1, clone2);
     Big bigger = maxBig(clone1, clone2);
     Big final = allocBig(); //copy to this
-    //inefficient? todo: make a better function for this
+    int didBig = 0;
     if (lesser->array->first[1] == 2 && !gtBig(lesser, MAXBIGINT)) {
         lesser->array->first[1] = 1;
         lesser->array->first[0] = pow(10, (lesser->array->first[0]));
@@ -244,21 +247,45 @@ Big bigAdd(Big add1, Big add2) {
         bigger->array->first[0] = pow(10, (bigger->array->first[0]));
     }
     if (gtBig(bigger, MAXBIGINT) || bigDivAndGt(bigger, lesser, MAXBIGINT)) {
+        didBig = 1;
         copyBig(final, bigger);
+    } else if ((bigger->array->first[1] == 0)) {
+        didBig = 1;
+        initBig(final, lesser->array->first[0] + bigger->array->first[1]);
+    } else if (bigger->array->first[1] == 1) {
+        if (lesser->array->first != 0) {
+            double a = lesser->array->first[0];
+        } else {
+            double a = log10(lesser->array->first[0]);
+        }
+        initBig(final, 0);
+        final->array->first[1] = 1;
+        final->array->first[0] = log10(pow(10, bigger->array->first[0])+1);
     }
 
+    if (!didBig) {
+        printf("bigAdd failed to find a solution. Returning 0...\n");
+        initBig(final, 0);
+    }
     return final;
 }
 
 //unsafe: creates a new big
 Big bigDiv(Big big1, Big big2) {
+    Big final = allocBig();
+    initBig(final, big1->array->first[0]/big2->array->first[0]);
+    return final;
+}
+
+//unsafe: creates a new big
+Big bigPow(Big big1, Big big2) {
 
 }
 
 //safe, creates a new big but cleans up after itself
 int bigDivAndGt(Big div1, Big div2, Big greaterThan) {
     Big afterDiv = bigDiv(div1, div2);
-    int result =  gtBig(afterDiv, greaterThan);
+    int result = gtBig(afterDiv, greaterThan);
     freeBig(afterDiv);
     return result;
 }
@@ -289,7 +316,7 @@ int compareBig(Big firstComp, Big secondComp) {
     if (isBigNan(firstComp) || isBigNan(secondComp)) {
         //return 2;
         perror("nan");
-        exit(_NANCODE);
+        exit(2);
     }
     //TODO: handle infinities
     if (firstComp->sign != secondComp->sign) {
@@ -299,11 +326,12 @@ int compareBig(Big firstComp, Big secondComp) {
     int firstSign = firstComp->sign;
     int toRetPreSignage = 0;
     if (firstComp->array->size != secondComp->array->size) {
-        toRetPreSignage = (firstComp->array->size > secondComp->array->size)*2-1;
-    } else {
+        toRetPreSignage = (firstComp->array->size > secondComp->array->size) * 2 - 1;
+    }
+    else {
         for (int i = firstComp->array->size - 1; i >= 0; i--) {
             if (firstComp->array->first[i] != secondComp->array->first[i]) {
-                toRetPreSignage = (firstComp->array->first[i] < secondComp->array->first[i])*2-1;
+                toRetPreSignage = (firstComp->array->first[i] < secondComp->array->first[i]) * 2 - 1;
                 break;
             }
         }
@@ -377,6 +405,16 @@ double toDouble(Big big) {
     return big->array->first[0];
 };
 
+
+int bigLen(Big toLen) {
+    int soFar = 0;
+    int i = -1;
+    while (toLen->array->first[i++] > 0) {
+        soFar++;
+    }
+    return soFar;
+}
+
 //safe
 int freeBig(Big big) {
     free(big->array->first);
@@ -385,6 +423,12 @@ int freeBig(Big big) {
     return 0;
 };
 
+//for lua
+Big createBig(double fromThisNum) {
+    Big toRet = allocBig();
+    initBig(toRet, fromThisNum);
+    return toRet;
+}
 
 int main() {
 
@@ -439,5 +483,12 @@ int main() {
     printf("Result should be 0: %d\n", result);
     freeBig(forComparison1);
     freeBig(forComparison2);
+
+    Big forAdd1 = allocBig();
+    Big forAdd2 = allocBig();
+    initBig(forAdd1, 10000);
+    initBig(forAdd2, 20000);
+    Big afterAdd = bigAdd(forAdd1, forAdd2);
+
     return 0;
 };
